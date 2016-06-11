@@ -138,12 +138,12 @@ class TrackTagAdapter(TrackInfoAdapter):
         try:
             audio = MP3(file_path, ID3=id3.ID3)
         except HeaderNotFoundError:
-            print >> sys.stderr, '! Invalid MP3: %s' % self._base.path
+            print('! Invalid MP3: %s' % self._base.path, file=sys.stderr)
             return
 
         # Collect allowed tags and remove ID3 from track
         tags = {}
-        for k in audio.keys():
+        for k in list(audio.keys()):
             if k in self.__allowed_tags:
                 tags[k] = audio[k]
         audio.delete()
@@ -170,7 +170,7 @@ class TrackTagAdapter(TrackInfoAdapter):
             try:
                 tags['TIT2'] = id3.TIT2(3, self._base.title)
             except UnicodeDecodeError:
-                print >> sys.stderr, '! Error decoding title: %s' % repr(self._base.title)
+                print('! Error decoding title: %s' % repr(self._base.title), file=sys.stderr)
                 raise
 
         if 'TRCK' not in tags:

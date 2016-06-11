@@ -13,10 +13,10 @@ class InfoLibrary(object):
             track_info = TrackTagAdapter(track_info)
             return track_info
 
-        print '* %s' % album_info.title
+        print('* %s' % album_info.title)
         for t in album_info.itertracks():
             track_info = adapt_track_info(t)
-            print '  %s | %s' % (track_info, os.path.split(t.file_name)[1])
+            print('  %s | %s' % (track_info, os.path.split(t.file_name)[1]))
 
     def has_album_art(self, album_info):
         for disc_no in range(1, album_info.disc_count+1):

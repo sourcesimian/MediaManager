@@ -1,9 +1,9 @@
 import os
 import sys
 import glob
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 from MediaManager.image.library.image import ImageInfo
@@ -37,11 +37,11 @@ class AlbumArtLibrary(object):
         image_url = urls[0]
         file_ext = os.path.splitext(image_url)[1]
 
-        print 'Fetching: %s' % image_url
+        print('Fetching: %s' % image_url)
         try:
-            response = urllib2.urlopen(image_url)
-        except (urllib2.HTTPError, urllib2.URLError), e:
-            print >> sys.stderr, '! %s' % (e)
+            response = urllib.request.urlopen(image_url)
+        except (urllib.error.HTTPError, urllib.error.URLError) as e:
+            print('! %s' % (e), file=sys.stderr)
             self.__not_found[album_info] = None
             return None
 
@@ -61,16 +61,16 @@ class AlbumArtLibrary(object):
 
         fields = {'v': '1.0', 'q': query}
 
-        url = ('https://ajax.googleapis.com/ajax/services/search/images?' + urllib.urlencode(fields))
+        url = ('https://ajax.googleapis.com/ajax/services/search/images?' + urllib.parse.urlencode(fields))
                # 'q=%s' % (query,)
                # 'v=1.0&q=barack%20obama&userip=INSERT-USER-IP')
 
-        print 'Google Image Search: %s' % query
-        request = urllib2.Request(url, None, {'Referer': ''})  #/* Enter the URL of your site here */})
+        print('Google Image Search: %s' % query)
+        request = urllib.request.Request(url, None, {'Referer': ''})  #/* Enter the URL of your site here */})
         try:
-            response = urllib2.urlopen(request)
-        except urllib2.URLError, e:
-            print >> sys.stderr, e
+            response = urllib.request.urlopen(request)
+        except urllib.error.URLError as e:
+            print(e, file=sys.stderr)
             return None
 
         # Process the JSON string.

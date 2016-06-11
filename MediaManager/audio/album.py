@@ -30,7 +30,7 @@ class AlbumInfo(object):
     @property
     def total_size(self):
         total_size = 0
-        for disc_no, files_by_type in self.__get_disc_map().iteritems():
+        for disc_no, files_by_type in self.__get_disc_map().items():
             if 'audio' in files_by_type:
                 for file_path in files_by_type['audio']:
                     total_size += os.path.getsize(self.__path(file_path))
@@ -42,7 +42,7 @@ class AlbumInfo(object):
 
     def track_count(self, for_disc_no=0):
         total = 0
-        for disc_no, files_by_type in self.__get_disc_map().iteritems():
+        for disc_no, files_by_type in self.__get_disc_map().items():
             if 'audio' in files_by_type:
                 if disc_no == for_disc_no or not for_disc_no:
                     total += len(files_by_type['audio'])
@@ -60,15 +60,15 @@ class AlbumInfo(object):
         from MediaManager.audio.track import TrackInfo
 
         disk_map = self.__get_disc_map()
-        for disc_no, files_by_type in disk_map.iteritems():
+        for disc_no, files_by_type in disk_map.items():
             if disc_no == 0:
                 continue
             for i, file_path in enumerate(files_by_type['audio']):
                 track_no = i + 1
                 try:
                     yield TrackInfo(self, disc_no, track_no, self.__path(file_path))
-                except ValueError, e:
-                    print >> sys.stderr, '! Error loading TrackInfo: %s' % e.message
+                except ValueError as e:
+                    print('! Error loading TrackInfo: %s' % e.message, file=sys.stderr)
 
     def copy_to(self, dest_dir, adapt_track_info=lambda x: x):
         self.__write_marker_file(dest_dir)
@@ -106,10 +106,15 @@ class AlbumInfo(object):
     def __repr__(self):
         return '<AlbumInfo "%s">' % (self.__base_path,)
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if self.artist == other.artist:
-            return cmp(self.title.lower(), other.title.lower())
-        return cmp(self.artist.lower(), other.artist.lower())
+            return self.title.lower() < other.title.lower()
+        return self.artist.lower() < other.artist.lower()
+
+    def __eq__(self, other):
+        if self.artist == other.artist:
+            return self.title.lower() == other.title.lower()
+        return self.artist.lower() == other.artist.lower()
 
     def __path(self, path):
         return os.path.join(self.__base_path, path)
@@ -154,7 +159,7 @@ class AlbumInfo(object):
         def decode(s):
             import codecs
             try:
-                return codecs.decode(s, 'UTF-8', 'replace')
+                return bytes(s, 'utf-8').decode('utf-8') # py2: codecs.decode(s, 'UTF-8', 'replace')
             except UnicodeDecodeError:
                 pass
             return codecs.decode(s, 'UTF-8', 'xmlcharsetreplace')
@@ -162,7 +167,7 @@ class AlbumInfo(object):
         try:
             path['artist'] = decode(s[-3])
             path['title'] = decode(s[-2])
-        except UnicodeDecodeError, e:
+        except UnicodeDecodeError as e:
             raise ValueError('%s: "%s"' % (e.message, repr(s[-3:-1])))
 
         artist = path['artist'].lower()
@@ -184,7 +189,7 @@ class AlbumInfo(object):
                 if not path:
                     disc_map[0] = files_by_type
             else:
-                for type, files in files_by_type.iteritems():
+                for type, files in files_by_type.items():
                     for file_name in files:
 
                         # Magic to advance disc number if track names are ALL prefixed with disc_no

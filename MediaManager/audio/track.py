@@ -13,14 +13,14 @@ class TrackInfo(object):
         def decode(s):
             import codecs
             try:
-                return codecs.decode(s, 'UTF-8', 'replace')
+                return bytes(s, 'utf-8').decode('utf-8')  #py2: codecs.decode(s, 'UTF-8', 'replace')
             except UnicodeDecodeError:
                 pass
             return codecs.decode(s, 'UTF-8', 'xmlcharsetreplace')
 
         try:
             self.__file_path = decode(file_path)
-        except UnicodeDecodeError, e:
+        except UnicodeDecodeError as e:
             raise ValueError('%s: "%s"' % (e.message, repr(file_path)))
         self.__genre = None
 

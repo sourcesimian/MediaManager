@@ -19,19 +19,19 @@ class TreeLibrary(object):
                 album = AlbumInfo(root)
 
                 if album.track_count == 0:
-                    print 'Empty album: "%s"' % repr(album)
+                    print('Empty album: "%s"' % repr(album))
                     continue
 
                 if album.name in self.__catalog:
-                    print 'Ignoring duplicate album: "%s"' % (album.name,)
-                    print ' - "%s"' % repr(self.__catalog[album.name])
-                    print ' - "%s"' % repr(album)
+                    print('Ignoring duplicate album: "%s"' % (album.name,))
+                    print(' - "%s"' % repr(self.__catalog[album.name]))
+                    print(' - "%s"' % repr(album))
                     continue
 
                 self.__catalog[album.name] = album
 
-            except ValueError, e:
-                print '! %s: %s' % (e.message, root)
+            except ValueError as e:
+                print('! %s: %s' % (e.message, root))
 
     def get_album(self, name):
         return self.__catalog[name]

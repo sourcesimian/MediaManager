@@ -37,7 +37,7 @@ class SyncSelect(object):
     def show_selection_window(self):
 
         # Ratify actions
-        for name, action in [(n, a) for n, a in self.__sync_list.iteritems()]:
+        for name, action in [(n, a) for n, a in self.__sync_list.items()]:
             if action == '+':
                 if not self.__src.has_album(name):
                     continue
@@ -73,7 +73,7 @@ class SyncSelect(object):
         items = []
         for name in sorted(names):
             items.append((get_color(name), name))
-        items.sort(lambda a, b: cmp(a[1], b[1]))
+        items.sort(key=lambda a: a[1])
 
         try:
             w = None
@@ -112,7 +112,7 @@ class SyncSelect(object):
 
                 add = 0
                 remove = 0
-                for name, cmd in self.__sync_list.iteritems():
+                for name, cmd in self.__sync_list.items():
                     if cmd == '+':
                         if self.__src.has_album(name):
                             add += self.__src.get_album(name).total_size
@@ -151,6 +151,8 @@ class SyncSelect(object):
 
             def getch():
                 char = w.getch()
+                with open('log', 'at') as fh:
+                    fh.write('%s\n' % repr(char))
                 if char == curses.KEY_PPAGE:   t.key_pgup()
                 elif char == curses.KEY_NPAGE: t.key_pgdn()
                 elif char == curses.KEY_LEFT:  t.key_pgup()
@@ -159,6 +161,9 @@ class SyncSelect(object):
                 elif char == curses.KEY_DOWN:  t.key_dn()
                 elif char == ord(' '):
                     state_toggle(t.current_line)
+                elif char == ord('s'):
+                    state_toggle(t.current_line)
+                    t.key_dn()
                 else:
                     #raise Exception(repr(char))
                     return char
@@ -171,7 +176,8 @@ class SyncSelect(object):
                     return False
                 if ch == 27:
                     return True
-                match.putch(ch)
+                if ch is not None:
+                    match.putch(ch)
 
         finally:
             if w:
@@ -183,7 +189,8 @@ class SyncSelect(object):
 class ToggleList(object):
     __pad = None
 
-    def __init__(self, (t, l, b, r), items, color=None):
+    def __init__(self, xxx_todo_changeme, items, color=None):
+        (t, l, b, r) = xxx_todo_changeme
         self.__tlbr = (t, l, b, r)
         self.__items = items
         page_size = b - t + 1
@@ -247,7 +254,8 @@ class ToggleList(object):
 
 
 class TextBox(object):
-    def __init__(self, (t, l), w, default_string=None, color=None, default_color=None):
+    def __init__(self, xxx_todo_changeme1, w, default_string=None, color=None, default_color=None):
+        (t, l) = xxx_todo_changeme1
         self.__width = w
         self.__default_string = default_string
         self.__color = color
@@ -344,10 +352,10 @@ class Window(object):
         curses.curs_set(0)
         curses.start_color()
 
-        for number, (r, b, g) in color_map.iteritems():
+        for number, (r, b, g) in color_map.items():
             curses.init_color(number, r, b, g)
 
-        for number, (fg, bg) in pair_map.iteritems():
+        for number, (fg, bg) in pair_map.items():
             curses.init_pair(number, fg, bg)
 
     def getmaxyx(self):
@@ -366,7 +374,8 @@ class Window(object):
     def getch(self):
         return self.__stdscr.getch()
 
-    def addstr(self, (y, x), string, color):
+    def addstr(self, xxx_todo_changeme2, string, color):
+        (y, x) = xxx_todo_changeme2
         meta = curses.color_pair(color)
         self.__stdscr.addstr(y, x, string, meta)
 
@@ -378,7 +387,9 @@ class Pad(object):
     __tlbr = None
     __pad = None
 
-    def __init__(self, (h, w), (t, l, b, r), color=None):
+    def __init__(self, xxx_todo_changeme3, xxx_todo_changeme4, color=None):
+        (h, w) = xxx_todo_changeme3
+        (t, l, b, r) = xxx_todo_changeme4
         self.__h, self.__w = (h, w)
         self.__tlbr = (t, l, b, r)
         self.__pad = curses.newpad(h, w)
@@ -395,10 +406,12 @@ class Pad(object):
 
         self.__pad = None
 
-    def refresh(self, (y, x)):
+    def refresh(self, xxx_todo_changeme5):
+        (y, x) = xxx_todo_changeme5
         self.__pad.refresh(y, x, *self.__tlbr)
 
-    def addstr(self, (y, x), string, color=None):
+    def addstr(self, xxx_todo_changeme6, string, color=None):
+        (y, x) = xxx_todo_changeme6
         string = string.encode('ascii','ignore')
         try:
             if color:
@@ -406,7 +419,7 @@ class Pad(object):
                 self.__pad.addstr(y, x, string, meta)
             else:
                 self.__pad.addstr(y, x, string)
-        except curses.error, e:
+        except curses.error as e:
             if y >= self.__h:
                 raise curses.error('%s: %s' % (e.message, 'Y bounds exceeded'))
             if x + len(string) >= self.__w:

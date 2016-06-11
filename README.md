@@ -35,3 +35,7 @@ Sample Usage:
 
      Sync with GoogleImages lookups for missing album art:
       $ mm-sync-music ~/Music/archive /media/usb --sync-now --cache ~/Downloads/album_arts
+
+## Install
+    pip install https://github.com/sourcesimian/MediaManager/tarball/v0.0.1#egg=MediaManager-0.0.1 --process-dependency-links
+    

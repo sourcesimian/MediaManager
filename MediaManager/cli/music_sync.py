@@ -17,7 +17,7 @@ def update_sync_list(from_lib, to_lib, sync_file):
     sync_list = SyncList(sync_file).load()
     sync_select = SyncSelect(from_lib, to_lib, sync_list)
     if sync_select.show_selection_window():
-        print "- Writing: %s" % sync_file
+        print("- Writing: %s" % sync_file)
         sync_list.save()
         return True
     return False
@@ -28,7 +28,7 @@ def sync_albums(from_lib, to_lib, sync_file, album_art):
 
     for name in sync_list:
         if sync_list[name] == '-':
-            print "- %s" % name
+            print("- %s" % name)
             to_lib.delete_album(name)
 
     for name in sync_list:
@@ -37,7 +37,7 @@ def sync_albums(from_lib, to_lib, sync_file, album_art):
                 continue
             if not from_lib.has_album(name):
                 continue
-            print "+ %s" % name
+            print("+ %s" % name)
             album = from_lib.get_album(name)
             to_lib.add_album(album, album_art)
 
@@ -59,12 +59,12 @@ def diff(from_lib, to_lib):
     diff.sort(by_name)
 
     for state, name in diff:
-        print '%s %s' % (state, name)
+        print('%s %s' % (state, name))
 
 
 def list_albums(from_lib):
     for album in sorted(from_lib):
-        print album.name
+        print(album.name)
 
 
 def main():
