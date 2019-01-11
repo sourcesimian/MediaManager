@@ -31,7 +31,7 @@ class FlatLibrary(object):
         if album_info.name in self.__catalog:
             raise KeyError('Album "%s" already exist in FlatLibrary' % (album_info.name,))
         dest_dir = os.path.join(self.__base_dir, album_info.name)
-        os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         def adapt_track_info(track_info):
             track_info = TrackNameAdapter(track_info)

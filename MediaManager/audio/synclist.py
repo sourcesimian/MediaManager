@@ -97,7 +97,7 @@ class SyncSelect(object):
             max_y, max_x = w.getmaxyx()
 
             w.refresh()
-            title = TextBox((0, 0), max_x, ' * Album Selection *  (ESC to accept, ^C to exit) ', 2, 2)
+            title = TextBox((0, 0), max_x, ' * Album Selection *  (W accept, ^C to exit) ', 2, 2)
             t = ToggleList((2, 0, max_y - 2, max_x), items, 1)
             match = TextBox((0, 50), 25, '<match>', 2, 11)
             dst = TextBox((1, 0), max_x, ' Sync to: %s' % self.__dst.base_dir, 2, 2)
@@ -120,9 +120,9 @@ class SyncSelect(object):
                         remove += self.__dst.get_album(name).total_size
 
                 avail = humanize(self.__dst_size)
-                final = humanize(used + add - remove)
+                final_usage = humanize(used + add - remove)
                 write = humanize(add)
-                str = " Free: %s   Final: %s   Write: %s" % (avail, final, write)
+                str = " Free: %s   Usage: %s   Write: %s" % (avail, final_usage, write)
                 space.set_value(str)
 
 
@@ -132,27 +132,49 @@ class SyncSelect(object):
                 if self.__dst.has_album(name):
                     if name in self.__sync_list:
                         del self.__sync_list[name]
-                        self.__dst_size += self.__dst.get_album(name).total_size
+                        self.__dst_size -= self.__dst.get_album(name).total_size
                     else:
                         self.__sync_list[name] = '-'
-                        self.__dst_size -= self.__dst.get_album(name).total_size
+                        self.__dst_size += self.__dst.get_album(name).total_size
                 elif self.__src.has_album(name):
                     if name in self.__sync_list:
                         del self.__sync_list[name]
-                        self.__dst_size -= self.__src.get_album(name).total_size
+                        self.__dst_size += self.__src.get_album(name).total_size
                     else:
                         self.__sync_list[name] = '+'
-                        self.__dst_size += self.__src.get_album(name).total_size
+                        self.__dst_size -= self.__src.get_album(name).total_size
                 else:
                     pass
                 set_space()
                 t.set_color(line, get_color(name))
 
 
+            def state_add(line):
+                name = items[line][1]
+
+                if self.__dst.has_album(name):
+                    if name in self.__sync_list:
+                        state_toggle(line)
+                elif self.__src.has_album(name):
+                    if name not in self.__sync_list:
+                        state_toggle(line)
+
+
+            def state_remove(line):
+                name = items[line][1]
+
+                if self.__dst.has_album(name):
+                    if name not in self.__sync_list:
+                        state_toggle(line)
+                elif self.__src.has_album(name):
+                    if name in self.__sync_list:
+                        state_toggle(line)
+
+
             def getch():
                 char = w.getch()
-                with open('log', 'at') as fh:
-                    fh.write('%s\n' % repr(char))
+                # with open('log', 'at') as fh:
+                #     fh.write('%s\n' % repr(char))
                 if char == curses.KEY_PPAGE:   t.key_pgup()
                 elif char == curses.KEY_NPAGE: t.key_pgdn()
                 elif char == curses.KEY_LEFT:  t.key_pgup()
@@ -164,6 +186,14 @@ class SyncSelect(object):
                 elif char == ord('s'):
                     state_toggle(t.current_line)
                     t.key_dn()
+                elif char == ord('+'):
+                    state_add(t.current_line)
+                    t.key_dn()
+                elif char == ord('-'):
+                    state_remove(t.current_line)
+                    t.key_dn()
+                elif char == ord('W'):
+                    return 'W'
                 else:
                     #raise Exception(repr(char))
                     return char
@@ -175,6 +205,8 @@ class SyncSelect(object):
                 except KeyboardInterrupt:
                     return False
                 if ch == 27:
+                    return False
+                if ch == 'W':
                     return True
                 if ch is not None:
                     match.putch(ch)
@@ -412,7 +444,7 @@ class Pad(object):
 
     def addstr(self, xxx_todo_changeme6, string, color=None):
         (y, x) = xxx_todo_changeme6
-        string = string.encode('ascii','ignore')
+        string = string.encode('ascii', 'ignore')
         try:
             if color:
                 meta = curses.color_pair(color)

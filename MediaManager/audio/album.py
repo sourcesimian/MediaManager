@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 
 
 class AlbumInfo(object):
@@ -77,6 +76,21 @@ class AlbumInfo(object):
             track_info.copy_to(dest_dir)
 
     def cover_image(self, disc_no):
+        image_files = self.__images(disc_no)
+        if image_files is None:
+            return None
+
+        from MediaManager.image.library.image import ImageInfo
+        return ImageInfo(self.__path(self.__cover_image(image_files)))
+
+    def __cover_image(self, image_files):
+        for image in image_files:
+            for pattern in ('front', 'cover'):
+                if pattern in image.lower():
+                    return image
+        return image_files[0]
+
+    def __images(self, disc_no):
         disc_map = self.__get_disc_map()
 
         try:
@@ -87,9 +101,7 @@ class AlbumInfo(object):
             except KeyError:
                 return None
 
-        from MediaManager.image.library.image import ImageInfo
-
-        return ImageInfo(self.__path(image_files[0]))
+        return image_files
 
     def write_cover_image(self, image_info, disc_no=0):
         disc_map = self.__get_disc_map()
@@ -148,9 +160,14 @@ class AlbumInfo(object):
     def __write_marker_file(self, folder):
         with open(os.path.join(folder, self._marker), 'wt') as fh:
             def write(key, value):
-                fh.write('%s = %s\n' % (key, value))
+                if value is None:
+                    fh.write('%s = \n' % (key,))
+                else:
+                    fh.write('%s = %s\n' % (key, value))
             write('artist', self.artist)
             write('title', self.title)
+            if self.genre:
+                write('genre', self.genre)
 
     def __analyse_path(self):
         s = self.__base_path.split(os.sep)
@@ -254,3 +271,5 @@ class AlbumInfo(object):
 
         return self.__file_map
 
+    def __hash__(self):
+        return hash(self.__str__())

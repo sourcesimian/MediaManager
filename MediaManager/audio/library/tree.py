@@ -1,4 +1,5 @@
 import os
+import sys
 
 from MediaManager.util.fs import available_space
 
@@ -19,19 +20,19 @@ class TreeLibrary(object):
                 album = AlbumInfo(root)
 
                 if album.track_count == 0:
-                    print('Empty album: "%s"' % repr(album))
+                    print('Empty album: "%s"' % repr(album), file=sys.stderr)
                     continue
 
                 if album.name in self.__catalog:
-                    print('Ignoring duplicate album: "%s"' % (album.name,))
-                    print(' - "%s"' % repr(self.__catalog[album.name]))
-                    print(' - "%s"' % repr(album))
+                    print('Ignoring duplicate album: "%s"' % (album.name,), file=sys.stderr)
+                    print(' - "%s"' % repr(self.__catalog[album.name]), file=sys.stderr)
+                    print(' - "%s"' % repr(album), file=sys.stderr)
                     continue
 
                 self.__catalog[album.name] = album
 
             except ValueError as e:
-                print('! %s: %s' % (e.message, root))
+                print('! %s: %s' % (e.message, root), file=sys.stderr)
 
     def get_album(self, name):
         return self.__catalog[name]

@@ -96,7 +96,7 @@ def main():
 
     album_art = None
     if args.cache:
-        album_art = AlbumArtLibrary(args.cache, False)
+        album_art = AlbumArtLibrary(args.cache, True)
 
     if args.to_lib:
         if args.sync_now:

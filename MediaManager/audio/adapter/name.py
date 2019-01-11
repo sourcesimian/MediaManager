@@ -85,7 +85,11 @@ class TrackNameAdapter(TrackInfoAdapter):
         return name.strip('-. ')
 
     def __name_without_suffix(self, name):
-        m = re.match('(?P<head>.*)\[%s\]' % self._base.album_info.title, name, re.IGNORECASE)
+        title = self._base.album_info.title
+        title = title.replace('[', '\[').replace(']', '\]')
+        title = title.replace('(', '\(').replace(')', '\)')
+        title = title.replace('.', '\.').replace('*', '\*').replace('?', '\?')
+        m = re.match('(?P<head>.*)\[%s\]' % title, name, re.IGNORECASE)
         if m:
             name = m.group('head').strip(self.__padding)
         m = re.match('(?P<head>.*) Track [0-9]+', name, re.IGNORECASE)

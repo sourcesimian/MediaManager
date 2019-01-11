@@ -1,3 +1,5 @@
+.PHONY:
+
 develop:
 	#./setup.sh
 	python3 -m venv virtualenv --without-pip
@@ -6,8 +8,8 @@ develop:
 		source ./virtualenv/bin/activate; \
 		wget -c -N https://bootstrap.pypa.io/get-pip.py -P virtualenv/bin/; \
 		python3 ./virtualenv/bin/get-pip.py; \
-		pip3 install pep8 pyflakes pylint nose coverage radon; \
-		python3 setup.py develop \
+		pip3 install pep8 pyflakes pylint pytest nose coverage radon; \
+		python3 setup.py develop; \
 	}
 
 
@@ -46,3 +48,11 @@ to_pypi_test:
 to_pypi_live:
 	python setup.py register -r pypi
 	python setup.py sdist upload -r pypi
+
+
+dockeret: .PHONY
+	docker build \
+		--build-arg http_proxy=${http_proxy} \
+		--build-arg https_proxy=${https_proxy} \
+		--build-arg no_proxy=${no_proxy} \
+		-t sourcesimian/mediamanager:1 -f ./dockeret/Dockerfile ./

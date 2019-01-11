@@ -1,0 +1,10 @@
+.git/
+.gitignore/
+.pytest_cache/
+.idea/
+virtualenv/
+MediaManager.egg-info/
+README.md
+makefile
+tests/
+build/
