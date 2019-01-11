@@ -73,7 +73,7 @@ class SyncSelect(object):
         items = []
         for name in sorted(names):
             items.append((get_color(name), name))
-        items.sort(key=lambda a: a[1])
+        items.sort(key=lambda a: a[1].lower())
 
         try:
             w = None
@@ -98,10 +98,11 @@ class SyncSelect(object):
 
             w.refresh()
             title = TextBox((0, 0), max_x, ' * Album Selection *  (W accept, ^C to exit) ', 2, 2)
-            t = ToggleList((2, 0, max_y - 2, max_x), items, 1)
+            t = ToggleList((2, 0, max_y - 3, max_x), items, 1)
             match = TextBox((0, 50), 25, '<match>', 2, 11)
             dst = TextBox((1, 0), max_x, ' Sync to: %s' % self.__dst.base_dir, 2, 2)
-            space = TextBox((max_y - 1, 0), 80, '', 2, 2)
+            space = TextBox((max_y - 1, 0), max_x, '', 2, 2)
+            info = TextBox((max_y - 2, 0), max_x, '', 2, 2)
 
             w.refresh()
 
@@ -122,9 +123,28 @@ class SyncSelect(object):
                 avail = humanize(self.__dst_size)
                 final_usage = humanize(used + add - remove)
                 write = humanize(add)
-                str = " Free: %s   Usage: %s   Write: %s" % (avail, final_usage, write)
-                space.set_value(str)
+                usage = " Free: %s   Usage: %s   Write: %s" % (avail, final_usage, write)
+                space.set_value(usage)
 
+            def set_info():
+                line = t.current_line
+                name = items[line][1]
+
+                def trunc(s):
+                    overflow = len(s) - (max_x - 6)
+                    if overflow > 0:
+                        s = '..%s' % s[overflow + 3:]
+                    return s
+
+                try:
+                    msg = ' Src: %s ' % trunc(self.__src.get_album(name)._AlbumInfo__base_path)
+                except KeyError:
+                    msg = '???'
+
+                try:
+                    info.set_value(msg)
+                except:
+                    info.set_value('')
 
             def state_toggle(line):
                 name = items[line][1]
@@ -199,6 +219,7 @@ class SyncSelect(object):
                     return char
 
             set_space()
+            set_info()
             while True:
                 try:
                     ch = getch()
@@ -210,6 +231,7 @@ class SyncSelect(object):
                     return True
                 if ch is not None:
                     match.putch(ch)
+                set_info()
 
         finally:
             if w:
