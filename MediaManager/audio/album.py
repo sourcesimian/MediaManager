@@ -19,6 +19,10 @@ class AlbumInfo(object):
         return self.__get_meta()['title']
 
     @property
+    def track_title(self):
+        return self.__get_meta().get('track-title', None)
+
+    @property
     def artist(self):
         return self.__get_meta()['artist']
 

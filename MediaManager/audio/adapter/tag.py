@@ -166,12 +166,12 @@ class TrackTagAdapter(TrackInfoAdapter):
         # print repr(self._base.path)
         # tags['COMM'] = id3.COMM(3, '%s' % self._base.path)
 
-        if 'TIT2' not in tags:
-            try:
-                tags['TIT2'] = id3.TIT2(3, self._base.title)
-            except UnicodeDecodeError:
-                print('! Error decoding title: %s' % repr(self._base.title), file=sys.stderr)
-                raise
+        # if 'TIT2' not in tags:
+        try:
+            tags['TIT2'] = id3.TIT2(3, self._base.title)
+        except UnicodeDecodeError:
+            print('! Error decoding title: %s' % repr(self._base.title), file=sys.stderr)
+            raise
 
         if 'TRCK' not in tags:
             tags['TRCK'] = id3.TRCK(3, '%d' % (self._base.track_no))

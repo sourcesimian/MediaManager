@@ -1,4 +1,6 @@
+import math
 import re
+
 
 from MediaManager.audio.track import TrackInfoAdapter
 
@@ -14,6 +16,23 @@ class TrackNameAdapter(TrackInfoAdapter):
 
     @property
     def title(self):
+        name = self._title()
+
+        if self._base.album_info.track_title:
+            class album:
+                artist = self._base.album_info.artist
+                title = self._base.album_info.title
+
+            ctx = {
+                'album': album,
+                'title': name,
+                'number': '-'.join([self._disc_no(), self._track_no()])
+            }
+            name = self._template(self._base.album_info.track_title, ctx)
+
+        return name
+
+    def _title(self):
         name = self._base.title
 
         name = self.__name_replace(name)
@@ -23,28 +42,41 @@ class TrackNameAdapter(TrackInfoAdapter):
         name = self.__name_cleanup_brackets(name)
         name = self.__name_without_string(name, self._base.album_info.artist)
         name = self.__name_without_string(name, self._base.album_info.title)
+
         return name
 
-    @property
-    def file_name(self):
-        import math
-        disc = ''
+    def _template(self, template, ctx):
+
+        def repl(matchobj):
+            return str(eval(matchobj.group(0)[1:-1], ctx))      # pylint: disable=W0123
+        return re.sub(r'{[0-9A-Za-z.-_\[\]\(\)\"\' ]+}', repl, template)
+
+    def _disc_no(self):
         if self._base.album_info.disc_count > 1:
             order = int(math.log10(self._base.album_info.disc_count)) + 1
-            format = '%%0%dd-' % order
+            format = '%%0%dd' % order
             disc = format % (self._base.disc_no,)
+            return disc
+
+    def _track_no(self):
         track_count = self._base.album_info.track_count(self._base.disc_no)
         order = int(math.log10(track_count)) + 1
         format = '%%0%dd' % order
         track = format % (self._base.track_no,)
+        return track
+
+    @property
+    def file_name(self):
+        track_no = self._track_no()
+        number = '-'.join([self._disc_no(), track_no])
 
         title = ''
-        if self.title != track:
-            title = ' %s' % (self.title,)
+        if self._title() != track_no:
+            title = ' %s' % (self._title(),)
 
         ext = '.%s' % (self._base.file_ext,)
 
-        return ''.join([disc, track, title, ext])
+        return ''.join([number, title, ext])
 
     def __name_without_index(self, name):
         # Has no real name
